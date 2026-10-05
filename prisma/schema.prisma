@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Merchant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  city        String
+  annualTurnoverPaise Int @default(0)
+  createdAt   DateTime @default(now())
+  users       User[]
+  products    Product[]
+  suppliers   Supplier[]
+  customers   Customer[]
+  expenses    Expense[]
+  schemes     MerchantScheme[]
+  complianceItems ComplianceItem[]
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  merchantId Int
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  name       String
+  role       String   @default("owner")
+  createdAt  DateTime @default(now())
+}
+
+model Product {
+  id           Int      @id @default(autoincrement())
+  merchantId   Int
+  merchant     Merchant @relation(fields: [merchantId], references: [id])
+  name         String
+  aliases      String   @default("[]") // JSON array of alternate names
+  unit         String   @default("unit")
+  sellingPricePaise Int
+  category     String   @default("general")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  stockBatches StockBatch[]
+  saleItems    SaleItem[]
+  @@index([merchantId])
+}
+
+model Supplier {
+  id         Int      @id @default(autoincrement())
+  merchantId Int
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  name       String
+  phone      String?
+  stockBatches StockBatch[]
+  @@index([merchantId])
+}
+
+model StockBatch {
+  id            Int       @id @default(autoincrement())
+  productId     Int
+  product       Product   @relation(fields: [productId], references: [id])
+  supplierId    Int?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+  qty           Int
+  remainingQty  Int
+  unitCostPaise Int
+  receivedAt    DateTime  @default(now())
+  expiryDate    DateTime?
+  offers        Offer[]
+  @@index([productId])
+  @@index([expiryDate])
+}
+
+model Sale {
+  id          Int        @id @default(autoincrement())
+  merchantId  Int
+  totalPaise  Int
+  createdAt   DateTime   @default(now())
+  items       SaleItem[]
+  @@index([merchantId])
+  @@index([createdAt])
+}
+
+model SaleItem {
+  id            Int     @id @default(autoincrement())
+  saleId        Int
+  sale          Sale    @relation(fields: [saleId], references: [id])
+  productId     Int
+  product       Product @relation(fields: [productId], references: [id])
+  qty           Int
+  sellingPricePaise Int
+  unitCostPaise Int
+  @@index([saleId])
+  @@index([productId])
+}
+
+model Customer {
+  id         Int           @id @default(autoincrement())
+  merchantId Int
+  merchant   Merchant      @relation(fields: [merchantId], references: [id])
+  name       String
+  phone      String?
+  credits    CreditEntry[]
+  @@index([merchantId])
+}
+
+model CreditEntry {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id])
+  amountPaise Int
+  type        String   // GIVEN | RECEIVED
+  note        String?
+  createdAt   DateTime @default(now())
+  isUndo      Boolean  @default(false)
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  merchantId  Int
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  description String
+  amountPaise Int
+  category    String   @default("other")
+  createdAt   DateTime @default(now())
+  @@index([merchantId])
+  @@index([createdAt])
+}
+
+model Offer {
+  id           Int        @id @default(autoincrement())
+  stockBatchId Int
+  stockBatch   StockBatch @relation(fields: [stockBatchId], references: [id])
+  discountPct  Int
+  status       String     @default("SUGGESTED") // SUGGESTED|APPROVED|REJECTED|EXPIRED
+  channels     String     @default("[]")
+  createdAt    DateTime   @default(now())
+  surplusListings SurplusListing[]
+}
+
+model SurplusListing {
+  id                Int    @id @default(autoincrement())
+  offerId           Int
+  offer             Offer  @relation(fields: [offerId], references: [id])
+  nearbyMerchantId  Int?
+  createdAt         DateTime @default(now())
+}
+
+model Scheme {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique
+  name         String
+  rulesJson    String   // JSON eligibility rules - PLACEHOLDER, verify with official source
+  sourceUrl    String
+  lastChecked  DateTime
+  merchantSchemes MerchantScheme[]
+}
+
+model MerchantScheme {
+  id         Int      @id @default(autoincrement())
+  merchantId Int
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  schemeId   Int
+  scheme     Scheme   @relation(fields: [schemeId], references: [id])
+  eligible   Boolean
+  reasonJson String
+  createdAt  DateTime @default(now())
+}
+
+model ComplianceItem {
+  id         Int      @id @default(autoincrement())
+  merchantId Int
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  type       String
+  dueDate    DateTime
+  status     String   @default("PENDING")
+  note       String?
+  @@index([merchantId])
+  @@index([dueDate])
+}
+
+model VoiceLog {
+  id         Int      @id @default(autoincrement())
+  text       String
+  intent     String?
+  provider   String?
+  createdAt  DateTime @default(now())
+  @@index([createdAt])
+}
+
+model UndoLog {
+  id         Int      @id @default(autoincrement())
+  action     String   // LOG_SALE | LOG_CREDIT | LOG_PURCHASE | RECEIVE_PAYMENT
+  referenceId Int
+  createdAt  DateTime @default(now())
+  undone     Boolean  @default(false)
+}

@@ -1,0 +1,120 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Tailwind v4 theme tokens ── */
+@theme inline {
+  /* shadcn plumbing */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  /* Fix for the missing primary color shades in V4 */
+  --color-primary-50:  #F0FDF4;
+  --color-primary-100: #DCFCE7;
+  --color-primary-200: #BBF7D0;
+  --color-primary-300: #86EFAC;
+  --color-primary-400: #4ADE80;
+  --color-primary-500: #22C55E;
+  --color-primary-600: #16A34A;
+  --color-primary-700: #15803D;
+  --color-primary-800: #14532D;
+  --color-primary-900: #0B3D2E;
+  --color-primary-950: #052E16;
+
+  /* Semantic tokens */
+  --color-ink:       #0F172A;
+  --color-muted-txt: #64748B;
+  --color-surface:   #FFFFFF;
+  --color-amber-500: #F59E0B;
+  --color-amber-600: #D97706;
+  --color-danger:    #DC2626;
+  --color-accent:    #F59E0B;
+}
+
+/* ── CSS custom properties ── */
+:root {
+  /* override shadcn to green brand */
+  --background: #F8FAFC; /* slightly cooler light gray for better contrast with cards */
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #16A34A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #DCFCE7;
+  --secondary-foreground: #14532D;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --destructive: #DC2626;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #16A34A;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), var(--font-noto-deva), var(--font-noto-kan), system-ui, sans-serif;
+  }
+}
+
+/* ── Veda Orb animations ── */
+@keyframes veda-breathe {
+  0%, 100% { transform: scale(1);   opacity: 0.9; }
+  50%       { transform: scale(1.07); opacity: 1;   }
+}
+@keyframes veda-pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0;   }
+}
+@keyframes veda-spin-gradient {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes veda-bar {
+  0%, 100% { height: 6px;  }
+  50%       { height: 22px; }
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.veda-breathe    { animation: veda-breathe 3s ease-in-out infinite; }
+.veda-pulse-ring { animation: veda-pulse-ring 1.2s ease-out infinite; }
+.veda-spin       { animation: veda-spin-gradient 1s linear infinite; }
+.veda-bar        { animation: veda-bar 0.6s ease-in-out infinite alternate; }
+.slide-up        { animation: slide-up 0.3s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .veda-breathe, .veda-pulse-ring, .veda-spin, .veda-bar { animation: none !important; }
+}
+
+/* ── Utility helpers ── */
+.money { font-variant-numeric: tabular-nums; }
+.touch-target { min-height: 48px; min-width: 48px; }
